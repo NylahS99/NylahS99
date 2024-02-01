@@ -1,0 +1,335 @@
+---
+title: "Exploration of Airbnb Listings in NYC"
+author: "Nylah Safforld - DATA 612"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+  
+```{r, echo = FALSE, eval = TRUE, include = FALSE}
+library(knitr)
+```
+
+
+
+# **Executive Summary**
+
+
+![](NYCpic.png){width=70%}
+
+
+This project aims to explore Airbnb listings throughout New York city with ggplot2 in R. We will also be using Chi-Square Test and ANOVA to look at the relationship between different variables. Airbnb project will use functionalities in R studio to capture insight into the dataset. The data is sourced from Kaggle. It includes the listings from Airbnb’s in New York City. The variables in this dataset include neighborhoods, room type, locations (longitude and latitude), reviews, prices, and availability.  
+
+This tutorial will take the reader through a step-by-step	process to explore data in R using ggplot2.  
+
+At the end of the tutorial, readers will be able to create plots in R using ggplot2 and be able to create an ANOVA model and conduct a Chi-Square test. The objective of this project is to uncover insights into the market of Airbnb’s in NYC and look at any trends in the data.  
+
+![Example of a scatterplot in ggplot2  ](ggplot.png){width=70%}
+
+
+# **Introduction**
+
+Welcome to the ggplot tutorial in R. This lesson will demonstrate how we can use the ggplot2 library in R to create data visualization and run analysis. We will use the Airbnb data set, which has the data for the Airbnb's in New York City. We will unveil trends in the data and understand more about this exciting data set. Come along as we explore all the Big Apple has to offer.  
+
+**Objectives**
+
+There are a few main objectives of this tutorial including the following: 
+
+* Learn and understand the use of ggplot in R  
+* Create visualizations to support our analysis 
+* Analyze and interpret inferential statistics using some of the variables
+
+**Key Takeaways** 
+
+* Grasping the basics of ggplot in R to create visualizations 
+* Identify key trends in the NYC Airbnb dataset  
+* Learning how to transform data to tell a story using plots and graphs 
+ 
+**Data Source and Variables**
+
+* For this tutorial, we will be using a data set from Kaggle which was sourced from Airbnb 
+* The data set contains data from Airbnb’s in all five boroughs of New York City 
+* The variables included in this data set are neighborhoods, neighborhood, location (latitude and longitude), property type, pricing, reviews, availability, and minimum nights.  
+
+
+![Variables before any data cleaning](variablenames.png){width=65%}
+
+# **Basics of ggplot**
+
+What is ggplot? 
+
+ggplot is a system for creating graphics
+
+**Basics**
+
+* ggplot() = Use this to create a new ggplot
+* aes() = Construct aesthetic mappings
+* `+`(<gg>) `%+%`= This is used to add components to a plot
+* ggsave() = Save a ggplot 
+
+**Geoms**
+
+* geom_bar() = to create bar charts
+* geom_boxplot() =  to create a box plot
+* geom_point() =  to create a scatter plot
+* geom_smooth() =  to create smoothed conditional means
+* geom_violin() =  to create a violin plot
+
+
+# **Clean the Data**
+
+```{r}
+
+# run the tidyverse package and dplyr which will also be used throughout the tutorial
+library(tidyverse)
+library(dplyr)
+
+# import data and save as airbnb_data
+airbnb_data <- read.csv("airbnb.csv")
+
+# look at the data, it will show how many rows and columns there are 
+glimpse(airbnb_data)
+
+# change the names of the variables 
+colnames(airbnb_data) <- c("id", "Airbnb_name", "host_id","host_name","borough","neighborhood",
+                              "latitude", "longitude","property_type", "price_per_night", "minimum_nights", "number_of_reviews", "last_review_date", "reviews_per_month", "total_host_listings", "availability_365")
+
+# Use the dplyr library to clean the data
+
+# The following functions remove rows that are missing data
+
+airbnb_data <- airbnb_data %>%
+  mutate(reviews_per_month = reviews_per_month) %>%
+  filter(!is.na(reviews_per_month))
+
+airbnb_data <- airbnb_data %>%
+  mutate(last_review_date = last_review_date) %>%
+  filter(!is.na(last_review_date))
+
+#check the data again
+glimpse(airbnb_data)
+
+
+```
+
+
+# **Plots and Graphs with Customization**
+
+# Types of Plots
+
+* Scatter Plots = geom_point()
+* Line Plots = geom_line()
+* Bar Plots = geom_bar()
+* Histograms = geom_histogram()
+* Box Plots = geom_boxplot()
+
+Others: geom_smooth or stat_smooth() = smoothed condition means
+
+# Customization:
+
+Here is how you can customize a plot
+
+**Themes**
+
+* theme_gray() = grey background and white gridlines
+* theme_minimal() = minimalistic theme
+* theme_bw() = dark-on-light 
+
+**Colors**
+
+* color and fill = to set the color; ex: color = purple or fill = borough
+
+**Titles**
+
+* labels = labs(), xlab(), ylab() to add labels to the x or y axis
+* titles = ggtitle() to add a title to a plot 
+
+```{r}
+library(ggplot2)
+# run ggplot2 library
+
+#start with ggplot() for each plot 
+
+#Scatter Plots 
+
+# 1.Create a scatter plot using the longitude as x and latitude as y. Use property type as the color and add a title and labels 
+
+ggplot(data = airbnb_data)  +  
+  geom_point(mapping=aes(x = longitude, y = latitude, color = property_type)) + labs(title = "Airbnb Locations by Property Type", x = "Longitude", y = "Latitude")
+
+# 2.Create a scatter plot using the minimum nights as x and number of days available throughout the year as y. Use property type as the color and add a title and labels 
+
+ggplot(data = airbnb_data)  +  
+  geom_point(mapping=aes(x = minimum_nights, y = availability_365, color = property_type)) + labs(title = "Minimum Nights by Availability", x = "Min Nights", y = "Availability")
+
+# 3.Create a scatter plot for the location using longitude and latitude. Make the plot purple and add a title and labels, this time using ggtitle and xlab/ylab. Use geom_smooth to look for patterns
+
+ggplot(data=airbnb_data) + 
+  geom_point(mapping = aes(x=longitude, y=latitude), color = "purple") + 
+  xlab("Longitude") + 
+  ylab("Latitude") +  
+  ggtitle("Scatter Plot of Location") + 
+  geom_smooth(method=lm, mapping=aes(x=longitude, y=latitude))  
+
+#Box plots
+
+# 1. Create a Box plot of prices by borough and fill with borough 
+
+ggplot(data = airbnb_data)  +  
+  geom_boxplot(mapping=aes(x = borough, y = price_per_night, fill = borough)) + labs(title = "Prices by Borough", x = "Borough", y = "Price")
+
+# 2. Create a Box plot of reviews per month by borough and fill with borough
+
+ggplot(data = airbnb_data)  +  
+  geom_boxplot(mapping=aes(x = borough, y = reviews_per_month, fill = borough)) + labs(title = "Reviews by Borough", x = "Borough", y = "Reviews per Month")
+
+#Bar plots
+
+# 1. Create a Bar plot of the boroughs
+
+ggplot(data = airbnb_data)  +  
+  geom_bar(mapping=aes( x = borough)) + labs(title = "Borough Bar Plot", x = "Borough")
+
+# 2. Create a Bar plot of the property type. 
+ggplot(data = airbnb_data)  +  
+  geom_bar(mapping=aes(x = property_type)) + labs(title = "Property Type", x = "Property Type")
+
+ 
+#Histograms
+
+#1. Create a histogram for the price distribution. Make the plot red. Set the width to 40.
+
+ggplot(airbnb_data, aes(x = price_per_night)) +
+  geom_histogram(binwidth = 40, fill = "red") +
+  labs(title = "Distribution of Prices", x = "Price", y = "Frequency")
+
+
+# To save a plot to a file use the ggsave()- save to a file
+```
+
+
+# **Faceting** 
+
+Faceting combines mulitple plots.
+
+facet_grid() = forms a matrix using rows and columns based on the variables. This is used mainly when there are two discrete variables 
+facet_wrap() = In the case that there is only one variable with multiple levels, use this function
+
+
+![Facet Plot Example](facetplot.png){width=70%}
+
+
+
+  
+  
+```{r}
+# Let's use facet_wrap to combine boxplots for number of reviews with boroughs. 
+
+ggplot(data = airbnb_data)  +  
+  geom_boxplot(mapping=aes(y=number_of_reviews)) +
+  facet_wrap(~borough)
+
+# facet for price per night using property type and using fill to specify the color of the plots
+
+ggplot(data = airbnb_data) +
+  geom_boxplot(mapping= aes(x=price_per_night), fill = "orange") +
+  facet_wrap(~property_type)
+
+# facet for price per night using borough and using fill to specify the color of the plots
+
+ggplot(data = airbnb_data) +
+  geom_histogram(mapping= aes(x=price_per_night), fill = "purple") +
+  facet_wrap(~borough)
+```
+# **Descriptive Statistics** 
+
+```{r}
+
+#Let's do some descriptive statistics for some of our variables 
+
+summary(airbnb_data$price_per_night)
+
+summary(airbnb_data$minimum_nights)
+
+summary(airbnb_data$number_of_reviews)
+
+```
+
+# **Inferential Statistics**
+
+```{r}
+
+#Let's check if there is a relationship between property type and borough.
+
+#Chi-Square Test (a = .05): We will use a Chi-Square test to look at relationship between property type and borough.
+
+cross_tab <- table(airbnb_data$property_type, airbnb_data$borough)
+
+result <- chisq.test(cross_tab)
+print(result)
+
+# Since the p-value is less than alpha, there is statistically significant relationship between room type and borough. 
+
+
+#ANOVA: We will now use ANOVA to compare the means (prices) between the different boroughs. 
+
+# Create an ANOVA model
+model <- aov(price_per_night ~ borough, data = airbnb_data)
+
+# Print a summary of the results
+summary(model)
+
+#Based on the results of the ANOVA model, there is evidence that the means of at least one group's mean is significantly different
+
+```
+
+# **Data Preparation**
+
+There were a few challenges when tidying the data:
+
+**Missing Data:** 
+
+* Some observations had missing data that could have happened for different reasons. 
+* These observations were omitted. 
+
+**Outliers:** 
+
+* Outliers may be misleading and impact certain values in analysis.
+
+**Variable Names:**
+
+* The variable names were changed to simplify or fix spelling
+
+A few examples:
+
+* neighbourhood was spelled with the "u" which is correct in other regions like the UK but it was changed to the US spelling 
+
+* neighbourhood_group was changed to borough because since the data is around NYC, the groups are called boroughs
+
+* Also, room_type was changed to property_type because an Airbnb can be an entire apartment/house as well. It is not limited
+to a room
+
+* Price was changed to price_per_night to be more specific. Price could mean per hour, month, or anything. It is important to 
+be clear
+
+
+# **Conclusion** 
+
+To conclude, we learned the basics of ggplot in R using the NYC Airbnb from Kaggle. This library allowed us to dig deeper into properties in NYC and uncover insights about Airbnb's like pricing, locations, and distribution in neighborhoods.We are now able to use ggplot to visualize "the city that never sleeps."
+
+
+# **Follow-Up Resources**
+
+If you would like to explore ggplot more, or even other visualization in R check out the recommended resources below: 
+
+* R for Data Science by Hadley Wickham 
+* https://ggplot2.tidyverse.org/reference/
+* DataCamp Course: Introduction to Data Visualization with ggplot2
+
+# **Appendix A: References**
+
+* ggplot2 reference. • ggplot2. (n.d.). https://ggplot2.tidyverse.org/reference/ 
+
+* RPubs. (n.d.). https://rpubs.com/ 
+
+* Wickham, H. (2023). R for Data Science: Import, Tidy, transform, visualize, and model data. O’Reilly. 

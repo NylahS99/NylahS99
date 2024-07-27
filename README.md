@@ -1,6 +1,5 @@
 - 👋 Hi, I’m Nylah
 - 👀 I’m interested in data
-- 🌱 I’m currently learning NLP
 - 💞️ I’m looking to collaborate on any interesting projects
 - 📫 Reach me at nylah.safforld@gmail.com
 
